@@ -1,0 +1,4 @@
+[alias]
+b = "build --release"
+[build]
+target = "wasm32-unknown-unknown"
