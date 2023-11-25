@@ -16,8 +16,8 @@ extern {
   fn get_window()-> usize;
   fn new_div()-> usize;
   fn append(parent:usize, child:usize);
-  fn text(dom:usize, i:usize, l:usize);
-  fn style(dom:usize, i:usize, l:usize);
+  fn text(dom:usize, i:usize);
+  fn style(dom:usize, i:usize);
   ext_fn!{
     onclick
     onmousedown2
@@ -27,10 +27,10 @@ extern {
 }
 
 
-macro_rules! impl_str {
+macro_rules! impl_1 {
   ($($f:ident)*) => {$(
-    pub fn $f(self, s:&str)-> Self {unsafe{
-      $f(self.0, s.as_ptr() as usize, s.len())
+    pub fn $f(self, s:usize)-> Self {unsafe{
+      $f(self.0, s);
     }self}
   )*};
 }
@@ -61,7 +61,7 @@ impl Dom {
   pub fn under(self, parent:Self)-> Self {unsafe{
     append(parent.0, self.0)
   }self}
-  impl_str!{
+  impl_1!{
     text
     style
   }

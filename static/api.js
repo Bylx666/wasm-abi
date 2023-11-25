@@ -22,9 +22,8 @@ let mod = {
   get_str(i, j) {
     return utf8.dec(new Uint8Array(this.mem,i,j));
   },
-  put_str(s) {
-    let u8 = utf8.enc(s);
-    let l = u8.byteLength;
+  put(s) {
+    let l = s.byteLength;
     let p = this.alloc(l, 8);
     new Uint8Array(this.mem).set(u8, p);
     return l;
@@ -38,8 +37,9 @@ let ptr = 0;
 let heap = {
   add: (e)=> {
     if(typeof heap[ptr]==="number") {
-      heap = heap[ptr];
+      let p = heap[ptr];
       heap[ptr] = e;
+      ptr = p;
     }else {
       heap[++ptr] = e;
     }
@@ -55,8 +55,9 @@ let heap = {
 // apis
 const base = {
   js_drop: (i)=> heap.drop(i),
+  js_str: (p, l)=> heap.add(mod.get_str(p, l)),
   log: (i)=> log(i),
-  href: ()=> mod.put_str("哈哈哈")
+  href: ()=> heap.add(location.href)
 };
 
 const HEAP_WIN = heap.add(window);
@@ -66,12 +67,12 @@ const dom = {
   get_body: ()=> HEAP_BODY,
   new_div: ()=> heap.add(document.createElement("div")),
   append: (i, j)=> heap[i].append(heap[j]),
-  text: (i, p, l)=> heap[i].textContent = mod.get_str(p, l),
+  text: (i, j)=> heap[i].textContent = heap[j],
   onclick: (i, p, m)=> heap[i].onclick = ()=> mod.call0(p, m),
   onmousedown2: (i, p, m)=> heap[i].onmousedown = (e)=> mod.call2(p, m, e.clientX, e.clientY),
   onmousemove2: (i, p, m)=> heap[i].onmousemove = (e)=> mod.call2(p, m, e.clientX, e.clientY),
   onmouseup: (i, p, m)=> heap[i].onmouseup = ()=> mod.call0(p, m),
-  style: (i, p, l)=> heap[i].style.cssText = mod.get_str(p, l)
+  style: (i, j)=> heap[i].style.cssText = heap[j]
 };
 
 
