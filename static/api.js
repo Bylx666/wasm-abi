@@ -14,9 +14,9 @@ let mod = {
   // built
   mem: new ArrayBuffer(0),
   alloc(size,align) {return 0;},
-  fn(f) {},
-  fn1(f,p) {},
-  fn2(f,p1,p2) {},
+  call0(p,m) {},
+  call1(p,m,p1) {},
+  call2(p,m,p1,p2) {},
 
   // static
   get_str(i, j) {
@@ -66,12 +66,12 @@ const dom = {
   get_body: ()=> HEAP_BODY,
   new_div: ()=> heap.add(document.createElement("div")),
   append: (i, j)=> heap[i].append(heap[j]),
-  text: (i, j, k)=> heap[i].textContent = mod.get_str(j, k),
-  onclick: (i, j)=> heap[i].onclick = ()=> mod.fn(j),
-  onmousedown2: (i, j)=> heap[i].onmousedown = (e)=> mod.fn2(j, e.clientX, e.clientY),
-  onmousemove2: (i, j)=> heap[i].onmousemove = (e)=> mod.fn2(j, e.clientX, e.clientY),
-  onmouseup: (i, j)=> heap[i].onmouseup = ()=> mod.fn(j),
-  style: (i, j, k)=> heap[i].style.cssText = mod.get_str(j, k)
+  text: (i, p, l)=> heap[i].textContent = mod.get_str(p, l),
+  onclick: (i, p, m)=> heap[i].onclick = ()=> mod.call0(p, m),
+  onmousedown2: (i, p, m)=> heap[i].onmousedown = (e)=> mod.call2(p, m, e.clientX, e.clientY),
+  onmousemove2: (i, p, m)=> heap[i].onmousemove = (e)=> mod.call2(p, m, e.clientX, e.clientY),
+  onmouseup: (i, p, m)=> heap[i].onmouseup = ()=> mod.call0(p, m),
+  style: (i, p, l)=> heap[i].style.cssText = mod.get_str(p, l)
 };
 
 
@@ -81,16 +81,13 @@ let imports = {
 };
 
 WebAssembly.instantiateStreaming(fetch("/target/wasm32-unknown-unknown/release/js.wasm"), imports).then(v=>{
-  let {memory, malloc, main, trigger_fn0, trigger_fn1, trigger_fn2} = v.instance.exports;
+  let {memory, malloc, main, call0, call1, call2} = v.instance.exports;
   Object.defineProperty(mod,"mem",{get:()=> memory.buffer});
   mod.alloc = malloc;
-  mod.fn = trigger_fn0;
-  mod.fn1 = trigger_fn1;
-  mod.fn2 = trigger_fn2;
+  mod.call0 = call0;
+  mod.call1 = call1;
+  mod.call2 = call2;
   main();
-  log(heap);
-  // trigger_fn0(0);
-  // trigger_fn1(0,20);
 });
 
 // })();

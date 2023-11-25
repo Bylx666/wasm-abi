@@ -5,6 +5,11 @@ extern {
   fn js_drop(i:usize);
 }
 
+macro_rules! ext_fn {
+  ($($f:ident)*) => {$(
+    fn $f(dom:usize, p:usize, m:usize);
+  )*};
+}
 #[link(wasm_import_module = "dom")]
 extern {
   fn get_body()-> usize;
@@ -13,10 +18,12 @@ extern {
   fn append(parent:usize, child:usize);
   fn text(dom:usize, i:usize, l:usize);
   fn style(dom:usize, i:usize, l:usize);
-  fn onclick(dom:usize, f:usize);
-  fn onmousedown2(dom:usize, f:usize);
-  fn onmousemove2(dom:usize, f:usize);
-  fn onmouseup(dom:usize, f:usize);
+  ext_fn!{
+    onclick
+    onmousedown2
+    onmousemove2
+    onmouseup
+  }
 }
 
 
@@ -30,8 +37,8 @@ macro_rules! impl_str {
 
 macro_rules! impl_fn {
   ($($f:ident)*) => {$(
-    pub fn $f(self, f:usize)-> Self {unsafe{
-      $f(self.0, f);
+    pub fn $f(self, f:[usize;2])-> Self {unsafe{
+      $f(self.0, f[0], f[1]);
     }self}
   )*};
 }
@@ -39,7 +46,7 @@ macro_rules! impl_fn {
 
 
 #[derive(Clone, Copy)]
-pub struct Dom (usize);
+pub struct Dom (pub usize);
 impl Dom {
   pub fn new()-> Self {Dom(unsafe{new_div()})}
   pub fn body()-> Self {Dom(unsafe{get_body()})}

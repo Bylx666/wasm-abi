@@ -1,9 +1,9 @@
-#![allow(unused_unsafe)]
+
+use std::alloc::{Layout,alloc};
 
 pub static mut ALLOCATORED_INCOMING: usize = 0;
 #[no_mangle]
 extern fn malloc(size:usize, align:usize)-> usize {
-    use std::alloc::{Layout,alloc};
     unsafe {
         let p = alloc(Layout::from_size_align_unchecked(size, align)) as usize;
         ALLOCATORED_INCOMING = p;
